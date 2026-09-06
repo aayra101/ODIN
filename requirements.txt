@@ -10,3 +10,9 @@ Pillow==10.2.0
 pytest==8.2.2
 pytest-asyncio==0.23.6
 pydantic-settings==2.2.1
+aiofiles==23.2.1
+numpy==1.26.4
+opencv-python-headless==4.9.0.80
+PyMuPDF==1.24.1
+scipy==1.12.0
+scikit-learn==1.4.2
