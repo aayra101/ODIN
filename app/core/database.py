@@ -19,6 +19,14 @@ def get_engine():
             settings.DATABASE_URL,
             echo=False,  # Set to True for SQL logging
             future=True,
+            pool_pre_ping=True,  # Validate connections before use — Neon's
+                                 # pooler closes idle connections server-side,
+                                 # and without this SQLAlchemy hands out a
+                                 # dead connection, causing
+                                 # "InterfaceError: connection is closed".
+            pool_recycle=300,   # Proactively recycle connections every 5
+                                 # minutes, before Neon's idle timeout can
+                                 # close them out from under us.
         )
     return _engine
 
