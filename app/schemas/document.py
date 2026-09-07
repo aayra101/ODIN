@@ -34,6 +34,16 @@ class DocumentResponse(DocumentBase):
     id: str
     ingested_at: datetime
 
+    @field_validator("id", mode="before")
+    @classmethod
+    def coerce_id_to_str(cls, v):
+        # `Document.id` is a native PostgreSQL UUID column, so SQLAlchemy
+        # hands back a uuid.UUID object here, not a string. Pydantic v2
+        # doesn't auto-coerce that for a plain `str` field, so without this
+        # `DocumentResponse.from_orm(document)` raises a validation error
+        # ("Input should be a valid string ... input_type=UUID").
+        return str(v)
+
 
 class IngestionResult(BaseModel):
     document_id: str
