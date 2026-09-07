@@ -157,11 +157,20 @@ class AnalysisService:
                     })
 
                     # Convert to dictionary for storage
+                    #
+                    # NOTE: DocumentPage.classification_confidence is a
+                    # String(20) column (see app/models/document.py), but
+                    # PageClassificationResult.classification_confidence is
+                    # a float. asyncpg does not silently coerce a Python
+                    # float into a VARCHAR bind parameter, so this must be
+                    # stringified here or every page-analysis insert fails
+                    # with "invalid input for query argument ... (expected
+                    # str, got float)".
                     page_data = {
                         "document_id": document_id,
                         "page_number": analysis.page_number,
                         "classification": classification_result.classification,
-                        "classification_confidence": classification_result.classification_confidence,
+                        "classification_confidence": str(classification_result.classification_confidence),
                         "classification_reason": classification_result.classification_reason,
                         "text_length": analysis.text_length,
                         "image_count": analysis.image_count,
@@ -377,7 +386,11 @@ class AnalysisService:
                 pages.append({
                     "page_number": page.page_number,
                     "classification": page.classification,
-                    "classification_confidence": page.classification_confidence,
+                    # Stored as a string (see _persist_page_analyses /
+                    # the analyze() insert above) because the DB column
+                    # is VARCHAR(20); cast back to float so API
+                    # consumers get a number, not a string.
+                    "classification_confidence": float(page.classification_confidence) if page.classification_confidence is not None else None,
                     "classification_reason": page.classification_reason,
                     "text_length": page.text_length,
                     "image_count": page.image_count,
